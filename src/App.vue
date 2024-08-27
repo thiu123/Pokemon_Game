@@ -1,26 +1,54 @@
+<!-- eslint-disable vue/valid-template-root -->
 <template>
-  <img alt="Vue logo" src="./assets/logo.png" />
-  <HelloWorld msg="Welcome to Your Vue.js App" />
+  <main-screen
+    v-if="statusMatch === 'default'"
+    @onStart="setStatusMatch($event)"
+  />
+  <interact-screen
+    v-if="statusMatch === 'match'"
+    :cardsContext="settings.cardsContext"
+  />
 </template>
 
 <script>
-import HelloWorld from "./components/HelloWorld.vue";
-
+import MainScreen from "./components/MainScreen.vue";
+import InteractScreen from "./components/InteractScreen.vue";
+import { shuffled } from "./utils/array.js";
 export default {
   name: "App",
+  data() {
+    return {
+      settings: {
+        totalOfBlocks: 0,
+        cardsContext: [],
+        startedAt: null,
+      },
+      statusMatch: "default",
+    };
+  },
   components: {
-    HelloWorld,
+    MainScreen,
+    InteractScreen,
+  },
+  methods: {
+    setStatusMatch(config) {
+      console.log("running event", config);
+      //phai co du lieu thi moi cho qua man choi game
+      this.settings.totalOfBlocks = config.totalOfBlocks; // ban dau totalOfBlocks la` 0, nhung khi nguoi dung chon che do 4x4,6x6 thi totalOfBlocks se = voi config.totalOfBlocks
+      // Nếu người dùng chọn chế độ 4x4, thì firstCards sẽ là mảng [1,2,3,4,5,6,7,8]
+      const firstCards = Array.from(
+        { length: this.settings.totalOfBlocks / 2 },
+        (_, i) => i + 1
+      );
+      const secondCards = [...firstCards]; // [1,2,3,4,5,6,7,8]
+      const cards = [...firstCards, ...secondCards]; //[1,...,16]
+      this.settings.cardsContext = shuffled(cards); // random theo ham shuffled trong file utils/array.js
+      this.settings.startedAt = new Date().getTime; // bat dau thoi gian choi game khi nguoi dung chon che do
+
+      this.statusMatch = "match";
+    },
   },
 };
 </script>
 
-<style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
-</style>
+<style></style>
