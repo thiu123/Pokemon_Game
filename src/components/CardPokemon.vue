@@ -1,5 +1,5 @@
 <template>
-  <div class="card">
+  <div class="card" :class="{ disabled: isDisabled }">
     <div
       class="card__inner"
       @click="onToggleFlipCard"
@@ -25,15 +25,31 @@ export default {
       type: String,
       required: true,
     },
+    card: {
+      type: [String, Number, Array, Object],
+    },
+    isFlipping: {
+      type: Boolean,
+    },
   },
   data() {
     return {
       isFlipped: false,
+      isDisabled: false,
     };
   },
   methods: {
     onToggleFlipCard() {
+      if (this.isDisabled || this.isFlipping) return; // Nếu thẻ đã bị vô hiệu hóa hoặc đang lật thẻ khác, không thực hiện thao tác
       this.isFlipped = !this.isFlipped;
+      if (this.isFlipped == true) this.$emit("onFlip", this.card); // có nghĩa là khi card được mở, nó sẽ lấy được giá trị của card nào đang được mở
+      // console.log(this.card);
+    },
+    onCloseBackCard() {
+      this.isFlipped = false;
+    },
+    onMaintainCard() {
+      this.isDisabled = true;
     },
   },
 };
@@ -55,6 +71,10 @@ export default {
   position: relative;
   height: 100%;
   width: 100%;
+}
+
+.card.disabled .card__inner {
+  cursor: default;
 }
 
 .card__inner.is-flipped {
