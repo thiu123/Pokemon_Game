@@ -7,12 +7,19 @@
   <interact-screen
     v-if="statusMatch === 'match'"
     :cardsContext="settings.cardsContext"
+    @onFinish="onGetResult"
+  />
+  <result-screen
+    v-if="statusMatch === 'result'"
+    :timer="timer"
+    @onStartAgain="statusMatch = 'default'"
   />
 </template>
 
 <script>
 import MainScreen from "./components/MainScreen.vue";
 import InteractScreen from "./components/InteractScreen.vue";
+import ResultScreen from "./components/ResultScreen.vue";
 import { shuffled } from "./utils/array.js";
 export default {
   name: "App",
@@ -24,11 +31,13 @@ export default {
         startedAt: null,
       },
       statusMatch: "default",
+      timer: 0,
     };
   },
   components: {
     MainScreen,
     InteractScreen,
+    ResultScreen,
   },
   methods: {
     setStatusMatch(config) {
@@ -43,9 +52,16 @@ export default {
       const secondCards = [...firstCards]; // [1,2,3,4,5,6,7,8]
       const cards = [...firstCards, ...secondCards]; //[1,...,16]
       this.settings.cardsContext = shuffled(cards); // random theo ham shuffled trong file utils/array.js
-      this.settings.startedAt = new Date().getTime; // bat dau thoi gian choi game khi nguoi dung chon che do
+      this.settings.startedAt = new Date().getTime(); // bat dau thoi gian choi game khi nguoi dung chon che do
+      // console.log(this.settings.cardsContext);
 
       this.statusMatch = "match";
+    },
+    onGetResult() {
+      //get timer
+      this.timer = new Date().getTime() - this.settings.startedAt;
+      // switch result component
+      this.statusMatch = "result";
     },
   },
 };
