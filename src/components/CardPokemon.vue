@@ -1,12 +1,35 @@
 <template>
-  <div class="card" :class="{ disabled: isDisabled }">
+  <div
+    class="card"
+    :class="{ disabled: isDisabled }"
+    :style="{
+      // (920-16*4) là lấy tổng chiều dài trình duyệt trừ cho margin top bottom và chia cho tổng số lượng card, sau đó là - 16 khoảng cách margin top bottom
+      height: `${(920 - 16 * 4) / Math.sqrt(cardsContext.length) - 16}px`, // 920 là chiều dài của trình duyệt(thường là 1080 nhưng dùng 920 để dễ xử lý)
+      width: `${
+        (((920 - 16 * 4) / Math.sqrt(cardsContext.length) - 16) * 3) / 4 // tính chiều rộng cho một card, tương tự như chiều cao nhưng tỉ lệ là h:4, w:3
+      }px`,
+    }"
+  >
     <div
       class="card__inner"
       @click="onToggleFlipCard"
       :class="{ 'is-flipped': isFlipped }"
     >
       <div class="card__face card__face--front">
-        <div class="card__content"></div>
+        <div
+          class="card__content"
+          :style="{
+            backgroundSize: `${
+              (((920 - 16 * 4) / Math.sqrt(cardsContext.length) - 16) * 3) /
+              4 /
+              3
+            }px ${
+              (((920 - 16 * 4) / Math.sqrt(cardsContext.length) - 16) * 3) /
+              4 /
+              3
+            }px`,
+          }"
+        ></div>
       </div>
       <div class="card__face card__face--back">
         <div
@@ -30,6 +53,12 @@ export default {
     },
     isFlipping: {
       type: Boolean,
+    },
+    cardsContext: {
+      type: Array,
+      default: function () {
+        return [];
+      },
     },
   },
   data() {
@@ -60,8 +89,6 @@ export default {
   display: inline-block;
   margin-right: 1rem;
   margin-bottom: 1rem;
-  width: 90px;
-  height: 120px;
 }
 
 .card__inner {
@@ -89,12 +116,11 @@ export default {
   overflow: hidden;
   border-radius: 1rem;
   padding: 1rem;
-  box-shadow: 0px 3px 10px 3px rgba(0, 0, 0, 0.2);
+  background-color: var(--dark);
 }
 
 .card__face--front .card__content {
   background: url("../assets/images/icon_back.png") no-repeat center center;
-  background-size: 60px 60px;
   width: 100%;
   height: 100%;
 }

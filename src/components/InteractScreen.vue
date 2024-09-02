@@ -1,6 +1,20 @@
 <template>
   <div class="screen">
-    <div class="screen__inner">
+    <div
+      class="screen__inner"
+      :style="{
+        width: `${
+          ((((920 - 16 * 4) / Math.sqrt(cardsContext.length) - 16) * 3) / 4 +
+            16) *
+          Math.sqrt(cardsContext.length)
+        }px`,
+        height: `${
+          ((((920 - 16 * 4) / Math.sqrt(cardsContext.length) - 16) * 3) / 4 +
+            16) *
+          Math.sqrt(cardsContext.length)
+        }px`,
+      }"
+    >
       <card-pokemon
         v-for="(card, index) in cardsContext"
         :key="index"
@@ -8,6 +22,7 @@
         :imgUrl="`images/${card}.png`"
         :card="{ index: index, value: card }"
         :isFlipping="isFlipping"
+        :cardsContext="cardsContext"
         @onFlip="checkRule($event)"
       />
     </div>
@@ -85,17 +100,17 @@ export default {
 <style lang="css" scoped>
 .screen {
   width: 100%;
-  height: 100vh;
+  height: 150vh;
   position: absolute;
   top: 0;
   left: 0;
   z-index: 2;
-  background-color: var(--dark);
+  background: url("../assets/images/pokemon_bg.jpg") no-repeat center center /
+    cover;
   color: var(--light);
 }
 
 .screen__inner {
-  width: 424px;
   display: flex;
   flex-wrap: wrap;
   margin: 2rem auto;
