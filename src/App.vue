@@ -30,7 +30,7 @@ export default {
         cardsContext: [],
         startedAt: null,
       },
-      statusMatch: "result",
+      statusMatch: "default",
       timer: 0,
     };
   },
