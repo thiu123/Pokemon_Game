@@ -1,118 +1,115 @@
 <template>
-  <div class="screen">
+  <div
+    class="fixed top-0 left-0 w-full h-screen z-10 bg-[url('@/assets/images/pokemon_bg.jpg')] bg-center bg-cover bg-no-repeat text-[var(--light)] flex flex-col overflow-hidden"
+  >
     <div
-      class="screen__inner"
-      :style="{
-        width: `${
-          ((((920 - 16 * 4) / Math.sqrt(cardsContext.length) - 16) * 3) / 4 +
-            16) *
-          Math.sqrt(cardsContext.length)
-        }px`,
-        height: `${
-          ((((920 - 16 * 4) / Math.sqrt(cardsContext.length) - 16) * 3) / 4 +
-            16) *
-          Math.sqrt(cardsContext.length)
-        }px`,
-      }"
+      class="flex-none w-full p-4 flex justify-between items-center bg-black/50 backdrop-blur-md"
     >
-      <card-pokemon
-        v-for="(card, index) in cardsContext"
-        :key="index"
-        :ref="`card-${index}`"
-        :imgUrl="`images/${card}.png`"
-        :card="{ index: index, value: card }"
-        :isFlipping="isFlipping"
-        :cardsContext="cardsContext"
-        @onFlip="checkRule($event)"
-      />
+      <div class="text-2xl font-bold">⏱ {{ formattedTimer }}</div>
+      <div class="text-2xl font-bold">Moves: {{ movesCount }}</div>
+    </div>
+
+    <div class="flex-1 min-h-0 flex items-center justify-center p-2 md:p-4">
+      <div
+        class="aspect-square w-[min(100%,calc(100vh-82px))] grid gap-1 sm:gap-2 md:gap-3"
+        :class="gridColsClass"
+      >
+        <card-pokemon
+          v-for="(card, index) in cardsContext"
+          :key="index"
+          :ref="(el) => (cardRefs[index] = el)"
+          :imgUrl="`images/${card}.png`"
+          :card="{ index: index, value: card }"
+          :isFlipping="isFlipping"
+          @onFlip="checkRule($event)"
+        />
+      </div>
     </div>
   </div>
 </template>
 
-<script>
+<script setup lang="ts">
+import { ref, computed, onMounted, onUnmounted } from "vue";
 import CardPokemon from "./CardPokemon.vue";
-export default {
-  props: {
-    cardsContext: {
-      type: Array,
-      default: function () {
-        return [];
-      },
-    },
-  },
-  components: {
-    CardPokemon,
-  },
-  data() {
-    return {
-      rules: [],
-      isFlipping: false, // quá trình xử lý chưa diễn ra
-    };
-  },
-  methods: {
-    checkRule(card) {
-      // Cách hoạt động: Khi ấn 2 thẻ cùng lúc thì thẻ 1 isFlipping vẫn là false và được thêm vào mảng rules
-      // Thẻ 2 isFlipping vẫn là false và được thêm vào rules nhưng isFlipping lúc này sẽ là true vì length đã = 2.
-      if (this.isFlipping == true) return; // Nếu đang lật thẻ khác, không thực hiện thao tác
 
-      if (this.rules.length === 2) return false;
-      this.rules.push(card); // Thêm phần tử vào mảng khi click
+const props = defineProps<{
+  cardsContext: any[];
+}>();
 
-      if (this.rules.length === 2) {
-        this.isFlipping = true; // Đánh dấu là đang lật thẻ
+const emit = defineEmits<{
+  (e: "onFinish", payload: { moves: number }): void;
+}>();
 
-        if (this.rules[0].value === this.rules[1].value) {
-          // thêm class diasbled 2 thẻ bài giống nhau
-          this.$refs[`card-${this.rules[0].index}`][0].onMaintainCard();
-          this.$refs[`card-${this.rules[1].index}`][0].onMaintainCard();
-          // reset rules
-          this.rules = [];
-          this.isFlipping = false; // Kết thúc xử lý
-          const disabledElements = document.querySelectorAll(
-            ".screen .card.disabled"
-          );
-          console.log(disabledElements);
+const rules = ref<any[]>([]);
+const isFlipping = ref(false);
+const cardRefs = ref<any[]>([]);
+const movesCount = ref(0);
+const elapsedSeconds = ref(0);
+let timerInterval: number | undefined;
 
-          if (
-            disabledElements &&
-            disabledElements.length == this.cardsContext.length - 2
-          ) {
-            setTimeout(() => {
-              this.$emit("onFinish");
-            }, 920);
-          }
-        } else {
-          setTimeout(() => {
-            // dùng setTimeout để tránh việc thẻ bài đầu tiên được mở bị úp khi chưa kịp check thẻ bài thứ 2
-            // đóng 2 card
-            this.$refs[`card-${this.rules[0].index}`][0].onCloseBackCard(); // ex:  card-0: [ Proxy(Object) ],
-            this.$refs[`card-${this.rules[1].index}`][0].onCloseBackCard(); // ex:  card-1  [ Proxy(Object) ],
-            // reset rules
-            this.rules = [];
-            this.isFlipping = false; // Kết thúc xử lý
-          }, 800);
-        }
+const formattedTimer = computed(() => {
+  const m = Math.floor(elapsedSeconds.value / 60)
+    .toString()
+    .padStart(2, "0");
+  const s = (elapsedSeconds.value % 60).toString().padStart(2, "0");
+  return `${m}:${s}`;
+});
+
+const gridColsClass = computed(() => {
+  const count = props.cardsContext.length;
+  if (count === 16) return "grid-cols-4 grid-rows-4";
+  if (count === 36) return "grid-cols-6 grid-rows-6";
+  if (count === 64) return "grid-cols-8 grid-rows-8";
+  if (count === 100) return "grid-cols-10 grid-rows-10";
+  return "grid-cols-4 grid-rows-4";
+});
+
+onMounted(() => {
+  timerInterval = window.setInterval(() => {
+    elapsedSeconds.value++;
+  }, 1000);
+});
+
+onUnmounted(() => {
+  if (timerInterval) clearInterval(timerInterval);
+});
+
+const checkRule = (card: any) => {
+  if (isFlipping.value) return;
+  if (rules.value.length === 2) return;
+
+  rules.value.push(card);
+
+  if (rules.value.length === 2) {
+    isFlipping.value = true;
+    movesCount.value++;
+
+    if (rules.value[0].value === rules.value[1].value) {
+      cardRefs.value[rules.value[0].index].onMaintainCard();
+      cardRefs.value[rules.value[1].index].onMaintainCard();
+
+      rules.value = [];
+      isFlipping.value = false;
+
+      const disabledCount = cardRefs.value.filter(
+        (c) => c && c.isDisabled
+      ).length;
+
+      if (disabledCount === props.cardsContext.length - 2) {
+        if (timerInterval) clearInterval(timerInterval);
+        setTimeout(() => {
+          emit("onFinish", { moves: movesCount.value });
+        }, 920);
       }
-    },
-  },
+    } else {
+      setTimeout(() => {
+        cardRefs.value[rules.value[0].index].onCloseBackCard();
+        cardRefs.value[rules.value[1].index].onCloseBackCard();
+
+        rules.value = [];
+        isFlipping.value = false;
+      }, 800);
+    }
+  }
 };
 </script>
-<style lang="css" scoped>
-.screen {
-  width: 100%;
-  height: 150vh;
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 2;
-  background: url("../assets/images/pokemon_bg.jpg") no-repeat center center /
-    cover;
-  color: var(--light);
-}
-
-.screen__inner {
-  display: flex;
-  flex-wrap: wrap;
-  margin: 2rem auto;
-}
-</style>

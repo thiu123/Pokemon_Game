@@ -1,61 +1,53 @@
 <template>
-  <div class="screen">
-    <h1>✨ Congratulations ✨</h1>
-    <h3>{{ Math.round(timer / 1000) }} seconds</h3>
-    <button @click="onStartAgain()">Start Again</button>
+  <div class="w-full min-h-screen flex flex-col justify-center items-center bg-[url('@/assets/images/pokemon_bg.jpg')] bg-center bg-cover bg-no-repeat text-[var(--dark)]">
+    <h1 class="text-5xl md:text-[5rem] mb-6 font-bold text-center">✨ Congratulations ✨</h1>
+    <h3 class="text-3xl md:text-[3rem] mt-6">{{ Math.round(timer / 1000) }} seconds</h3>
+    <p class="text-2xl mt-2">Total Moves: {{ moves }}</p>
+    <button 
+      @click="onStartAgain()"
+      class="font-inherit bg-transparent shadow-none border border-[var(--dark)] text-[var(--dark)] mt-8 py-4 px-8 rounded-xl text-2xl font-bold cursor-pointer transition duration-200 hover:bg-[var(--dark)] hover:text-[var(--light)]"
+    >
+      Start Again
+    </button>
   </div>
 </template>
 
-<script>
-export default {
-  props: {
-    timer: {
-      type: Number,
-      required: true,
-    },
-  },
-  methods: {
-    onStartAgain() {
-      this.$emit("onStartAgain");
-    },
-  },
-};
-</script>
+<script setup lang="ts">
+import { onMounted } from 'vue'
+import confetti from 'canvas-confetti'
 
-<style lang="css" scoped>
-.screen {
-  width: 100%;
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  background: url("../assets/images/pokemon_bg.jpg") no-repeat center center /
-    cover;
-  color: var(--dark);
+const props = defineProps<{
+  timer: number
+  moves: number
+}>()
+
+const emit = defineEmits<{
+  (e: 'onStartAgain'): void
+}>()
+
+const onStartAgain = () => {
+  emit('onStartAgain')
 }
-.screen h1 {
-  font-size: 5rem;
-}
-.screen h3 {
-  font-size: 3rem;
-  margin-top: 1.5rem;
-}
-.screen button:hover {
-  background-color: var(--dark);
-  color: var(--light);
-}
-.screen button {
-  font: var(--font);
-  background: transparent;
-  box-shadow: none;
-  border: 1px solid var(--dark);
-  color: var(--dark);
-  margin: 1rem;
-  padding: 1rem 1.25rem;
-  border-radius: 0.5rem;
-  font-size: 1.25rem;
-  cursor: pointer;
-  transition: 0.2s;
-}
-</style>
+
+onMounted(() => {
+  var duration = 3 * 1000;
+  var animationEnd = Date.now() + duration;
+  var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+  function randomInRange(min: number, max: number) {
+    return Math.random() * (max - min) + min;
+  }
+
+  var interval: any = setInterval(function() {
+    var timeLeft = animationEnd - Date.now();
+
+    if (timeLeft <= 0) {
+      return clearInterval(interval);
+    }
+
+    var particleCount = 50 * (timeLeft / duration);
+    confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } });
+    confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
+  }, 250);
+})
+</script>
