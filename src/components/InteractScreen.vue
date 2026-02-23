@@ -5,6 +5,12 @@
     <div
       class="flex-none w-full p-4 flex justify-between items-center bg-black/50 backdrop-blur-md"
     >
+      <button
+        @click="emit('onBack')"
+        class="text-xl font-bold px-3 py-1 rounded-lg border border-white/60 hover:bg-white/20 transition"
+      >
+        ← Back
+      </button>
       <div class="text-2xl font-bold">⏱ {{ formattedTimer }}</div>
       <div class="text-2xl font-bold">Moves: {{ movesCount }}</div>
     </div>
@@ -38,12 +44,14 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: "onFinish", payload: { moves: number }): void;
+  (e: "onBack"): void;
 }>();
 
 const rules = ref<any[]>([]);
 const isFlipping = ref(false);
 const cardRefs = ref<any[]>([]);
 const movesCount = ref(0);
+const matchedPairs = ref(0);
 const elapsedSeconds = ref(0);
 let timerInterval: number | undefined;
 
@@ -88,14 +96,11 @@ const checkRule = (card: any) => {
       cardRefs.value[rules.value[0].index].onMaintainCard();
       cardRefs.value[rules.value[1].index].onMaintainCard();
 
+      matchedPairs.value++;
       rules.value = [];
       isFlipping.value = false;
 
-      const disabledCount = cardRefs.value.filter(
-        (c) => c && c.isDisabled
-      ).length;
-
-      if (disabledCount === props.cardsContext.length - 2) {
+      if (matchedPairs.value === props.cardsContext.length / 2) {
         if (timerInterval) clearInterval(timerInterval);
         setTimeout(() => {
           emit("onFinish", { moves: movesCount.value });

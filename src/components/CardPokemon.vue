@@ -44,9 +44,9 @@ const isFlipped = ref(false);
 const isDisabled = ref(false);
 
 const onToggleFlipCard = () => {
-  if (isDisabled.value || props.isFlipping) return;
-  isFlipped.value = !isFlipped.value;
-  if (isFlipped.value) emit("onFlip", props.card);
+  if (isDisabled.value || props.isFlipping || isFlipped.value) return;
+  isFlipped.value = true;
+  emit("onFlip", props.card);
 };
 
 const onCloseBackCard = () => {
