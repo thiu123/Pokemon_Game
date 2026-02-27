@@ -1,6 +1,7 @@
 <template>
   <div
-    class="fixed top-0 left-0 w-full h-screen z-10 bg-[url('@/assets/images/pokemon_bg.jpg')] bg-center bg-cover bg-no-repeat text-[var(--light)] flex flex-col overflow-hidden"
+    class="fixed top-0 left-0 w-full h-screen z-10 bg-center bg-cover bg-no-repeat text-[var(--light)] flex flex-col overflow-hidden"
+    style="background-image: url('/background.gif');"
   >
     <div
       class="flex-none w-full p-4 flex justify-between items-center bg-black/50 backdrop-blur-md"
@@ -12,7 +13,10 @@
         ← Back
       </button>
       <div class="text-2xl font-bold">⏱ {{ formattedTimer }}</div>
-      <div class="text-2xl font-bold">Moves: {{ movesCount }}</div>
+      <div class="flex items-center gap-3">
+        <div class="text-2xl font-bold">Moves: {{ movesCount }}</div>
+        <audio-control />
+      </div>
     </div>
 
     <div class="flex-1 min-h-0 flex items-center justify-center p-2 md:p-4">
@@ -37,6 +41,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from "vue";
 import CardPokemon from "./CardPokemon.vue";
+import AudioControl from "./AudioControl.vue";
+import { useAudio } from "@/composables/useAudio";
 
 const props = defineProps<{
   cardsContext: any[];
@@ -72,14 +78,20 @@ const gridColsClass = computed(() => {
   return "grid-cols-4 grid-rows-4";
 });
 
+const { play, stop } = useAudio();
+
 onMounted(() => {
   timerInterval = window.setInterval(() => {
     elapsedSeconds.value++;
   }, 1000);
+  // Start 8-bit Pokemon music
+  play();
 });
 
 onUnmounted(() => {
   if (timerInterval) clearInterval(timerInterval);
+  // Stop music when leaving game screen
+  stop();
 });
 
 const checkRule = (card: any) => {

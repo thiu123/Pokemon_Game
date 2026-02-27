@@ -1,5 +1,8 @@
 <template>
-  <div class="w-full min-h-screen flex flex-col justify-center items-center bg-[url('@/assets/images/pokemon_bg.jpg')] bg-center bg-cover bg-no-repeat text-[var(--dark)]">
+  <div
+    class="w-full min-h-screen flex flex-col justify-center items-center bg-center bg-cover bg-no-repeat text-[var(--dark)]"
+    style="background-image: url('/background.gif');"
+  >
     <h1 class="text-5xl md:text-[5rem] mb-6 font-bold text-center">✨ Congratulations ✨</h1>
     <h3 class="text-3xl md:text-[3rem] mt-6">{{ Math.round(timer / 1000) }} seconds</h3>
     <p class="text-2xl mt-2">Total Moves: {{ moves }}</p>
